@@ -21,9 +21,10 @@ class MyApp extends StatelessWidget {
 }
 
 class CounterPage extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
-
+    // 从父控件中查询 IncrementBloc , 并复制给bloc 变量
     final IncrementBloc bloc = BlocProvider.of<IncrementBloc>(context);
 
     return Scaffold(
@@ -31,7 +32,7 @@ class CounterPage extends StatelessWidget {
       body: Center(
         child: StreamBuilder<int>(
             // StreamBuilder控件中没有任何处理业务逻辑的代码
-            stream: bloc.outCounter,
+            stream: bloc.outCounter,  // 在这里获取 bloc的outCounter
             initialData: 0,
             builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
               return Text('You hit me: ${snapshot.data} times');
@@ -52,10 +53,11 @@ class IncrementBloc implements BlocBase {
   int _counter;
 
   /// 处理counter的stream
+  // 声明一个Stream广播
   StreamController<int> _counterController = StreamController<int>();
-  // 供内部调用, 输入以 in 开头
+  // 供内部调用, [输入] 以 in  开头的 StreamSink
   StreamSink<int> get _inAdd => _counterController.sink; // sink,向Stream输入
-  // 供外部调用, 输出以 out 开头
+  /// 供外部调用, [输出] 以 out 开头的 Stream
   Stream<int> get outCounter => _counterController.stream;// stream, 输出控制?
 
   // 处理业务逻辑的stream, 即处理用户点击等事件
@@ -63,18 +65,17 @@ class IncrementBloc implements BlocBase {
   // 暴露给外部, 提供处理方法, 计数器增加
   StreamSink get incrementCounter => _actionController.sink;
 
-  // 构造器
+  // 构造器, 同时初始化变量
   IncrementBloc() {
-    _counter = 0;
-    _actionController.stream.listen(_handleLogic);
+    _counter = 0;   // 初始化
+    _actionController.stream.listen(_handleLogic);  //操作触发逻辑
   }
 
-  // 释放资源
+  // 释放Controller资源
   void dispose() {
     _actionController.close();
     _counterController.close();
   }
-
   // 监听到事件后调用的处理逻辑
   void _handleLogic(data) {
     _counter = _counter + 1;
